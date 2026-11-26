@@ -1,47 +1,244 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prank Wok</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        .container {
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-            max-width: 600px;
-            width: 100%;
-            text-align: center;
-        }
-        .container img {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
-            display: block;
-        }
-        .container h1 {
-            margin-top: 15px;
-            color: #1e3c72;
-            font-size: 1.5rem;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07061a">
+<title>Snout Retro</title>
+<style>
+:root{--bg:#07061a;--card:#14123a;--line:#2a2766;--txt:#ecebff;--dim:#9a97c9;--acc:#8b7bff;--acc2:#4fd1ff;--bad:#ff6b8b}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+body{min-height:100vh;background:radial-gradient(1200px 600px at 20% -10%,#241f6b55,transparent),radial-gradient(900px 500px at 100% 10%,#0e4a7a44,transparent),var(--bg)}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px calc(40px + env(safe-area-inset-bottom))}
+h1{font-size:22px;margin:6px 0 2px}
+.sub{color:var(--dim);font-size:13px;margin:0 0 18px}
+.ver{color:var(--dim);font-size:11px;margin-top:22px;text-align:center}
+.box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.box h2{font-size:15px;margin:0 0 10px}
+label.row{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--dim);margin:10px 0}
+select,button{font:inherit}
+select{background:#0d0b2b;color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%}
+.btn{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#07061a;border:0;border-radius:12px;padding:12px 16px;font-weight:700;width:100%;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line);width:auto;padding:8px 12px;font-weight:600}
+.btn.bad{color:var(--bad)}
+input[type=file]{display:none}
+.note{font-size:12px;color:var(--dim);line-height:1.5;margin-top:10px}
+.game{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.game:first-of-type{border-top:0}
+.game .t{flex:1;min-width:0}
+.game .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.game .t span{font-size:12px;color:var(--dim)}
+.empty{color:var(--dim);font-size:13px;padding:6px 0}
+#stage{position:fixed;inset:0;background:#000;z-index:50;display:none}
+#stage.on{display:block}
+#game{width:100%;height:100%}
+#exit{position:fixed;top:max(8px,env(safe-area-inset-top));left:8px;z-index:60;display:none;background:#000a;color:#fff;border:1px solid #fff4;border-radius:10px;padding:8px 12px}
+#exit.on{display:block}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1c1950;border:1px solid var(--line);padding:10px 14px;border-radius:12px;font-size:13px;display:none;z-index:70;max-width:90vw}
+</style>
 </head>
 <body>
-    <div class="container">
-        <img src="gambar/gambar.jpg" alt="Gambar Saya">
-        <h1>Anak Pintar</h1>
+<div class="wrap">
+  <h1>Snout Retro</h1>
+  <p class="sub">Emulator retro di browser. Game tidak ada di sini: kamu memilih file milikmu sendiri.</p>
+
+  <div class="box" id="hostedBox" style="display:none">
+    <h2>Game dari server</h2>
+    <div id="hosted"></div>
+    <div class="note">Game buatan pemilik situs ini. Langsung main, tidak perlu file.</div>
+  </div>
+
+  <div class="box">
+    <h2>Main game</h2>
+    <label class="row" for="console">Konsol</label>
+    <select id="console">
+      <option value="auto">Otomatis (dari jenis file)</option>
+      <option value="psx">PlayStation 1</option>
+      <option value="psp">PSP</option>
+      <option value="nds">Nintendo DS</option>
+      <option value="gba">Game Boy Advance</option>
+      <option value="snes">SNES</option>
+      <option value="nes">NES</option>
+    </select>
+    <label class="row"><input type="checkbox" id="keep"> Simpan salinan di browser (makan ruang tambahan)</label>
+    <button class="btn" id="pick">Pilih file game</button>
+    <input type="file" id="file" multiple accept=".iso,.bin,.cue,.chd,.zip,.7z,.pbp,.cso,.img,.nds,.gba,.smc,.sfc,.nes">
+    <div class="note">
+      Default-nya <b>tanpa menyalin</b>: file tetap di tempat asalnya dan dibaca langsung saat main, jadi tidak memakai ruang dua kali.
+      Untuk PS1 yang berupa <code>.bin</code> + <code>.cue</code>, pilih <b>kedua file sekaligus</b>.
+      Kalau game gagal jalan, coba format <code>.chd</code> atau <code>.zip</code>.
     </div>
-    
+  </div>
+
+  <div class="box">
+    <h2>Tersimpan di browser</h2>
+    <div id="lib"><div class="empty">Belum ada.</div></div>
+    <div class="note">Progres game (save) disimpan emulator di browser ini. Pakai menu emulator (ikon di layar) untuk menyimpan atau mengunduh save state. Kalau data browser dihapus, save ikut hilang.</div>
+  </div>
+
+  <div class="ver">Snout Retro <span class="app-ver"></span></div>
+</div>
+
+<button id="exit">&larr; Keluar</button>
+<div id="stage"><div id="game"></div></div>
+<div id="toast"></div>
+
+<script>
+const APP_VERSION='1.2';
+document.querySelectorAll('.app-ver').forEach(e=>e.textContent='v'+APP_VERSION);
+const CDN='https://cdn.emulatorjs.org/stable/data/';
+const $=s=>document.querySelector(s);
+const CORE_LABEL={psx:'PS1',psp:'PSP',nds:'NDS',gba:'GBA',snes:'SNES',nes:'NES'};
+const EXT_CORE={gba:'gba',nds:'nds',smc:'snes',sfc:'snes',nes:'nes',cso:'psp'};
+const AMBIG=['iso','bin','cue','chd','zip','7z','pbp','img'];
+const PSP_EXT=['iso','cso'];
+
+function toast(m,ms=3500){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display='none',ms)}
+const extOf=n=>(n.split('.').pop()||'').toLowerCase();
+const baseOf=n=>n.replace(/\.[^.]+$/,'');
+
+/* ---- IndexedDB (hanya dipakai bila "simpan salinan" dicentang) ---- */
+function idb(){return new Promise((ok,no)=>{const r=indexedDB.open('snout-retro',1);r.onupgradeneeded=()=>r.result.createObjectStore('games',{keyPath:'id'});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
+async function dbAll(){try{const d=await idb();return await new Promise((ok,no)=>{const q=d.transaction('games').objectStore('games').getAll();q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)})}catch{return[]}}
+async function dbPut(g){const d=await idb();return new Promise((ok,no)=>{const t=d.transaction('games','readwrite');t.objectStore('games').put(g);t.oncomplete=ok;t.onerror=()=>no(t.error)})}
+async function dbDel(id){const d=await idb();return new Promise((ok,no)=>{const t=d.transaction('games','readwrite');t.objectStore('games').delete(id);t.oncomplete=ok;t.onerror=()=>no(t.error)})}
+
+/* ---- ZIP tanpa kompresi (untuk menggabung .cue + .bin) ---- */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC[(c^u8[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+async function makeZip(files){
+  const enc=new TextEncoder(),parts=[],cd=[];let off=0;
+  for(const f of files){
+    const data=new Uint8Array(await f.arrayBuffer()),name=enc.encode(f.name),crc=crc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);
+    lh.setUint16(10,0,true);lh.setUint16(12,0x21,true);lh.setUint32(14,crc,true);lh.setUint32(18,data.length,true);lh.setUint32(22,data.length,true);
+    lh.setUint16(26,name.length,true);lh.setUint16(28,0,true);
+    parts.push(lh.buffer,name,data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);
+    ch.setUint16(12,0,true);ch.setUint16(14,0x21,true);ch.setUint32(16,crc,true);ch.setUint32(20,data.length,true);ch.setUint32(24,data.length,true);
+    ch.setUint16(28,name.length,true);ch.setUint32(42,off,true);
+    cd.push(ch.buffer,name);
+    off+=30+name.length+data.length;
+  }
+  let cdSize=0;for(const p of cd)cdSize+=p.byteLength;
+  const end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,cdSize,true);end.setUint32(16,off,true);
+  return new Blob([...parts,...cd,end.buffer],{type:'application/zip'});
+}
+
+/* ---- Menyiapkan satu game dari file yang dipilih ---- */
+async function prepare(files){
+  files=[...files];
+  if(!files.length)return null;
+  const cue=files.find(f=>extOf(f.name)==='cue');
+  let blob,name;
+  if(files.length>1){
+    if(!cue){toast('Pilih satu file saja, atau .cue + .bin sekaligus.');return null}
+    toast('Menyiapkan file…');
+    name=baseOf(cue.name);
+    blob=await makeZip(files);
+    return {blob,name:name+'.zip',title:name,first:cue};
+  }
+  const f=files[0];
+  if(extOf(f.name)==='cue'){toast('File .cue butuh file .bin-nya juga. Pilih keduanya sekaligus.');return null}
+  return {blob:f,name:f.name,title:baseOf(f.name),first:f};
+}
+function pickCore(first,size){
+  const sel=$('#console').value;
+  if(sel!=='auto')return sel;
+  const e=extOf(first.name);
+  if(EXT_CORE[e])return EXT_CORE[e];
+  if(PSP_EXT.includes(e))return 'psp';   // .iso/.cso: PSP (CD PS1 maksimal ~700MB, jadi di atasnya pasti PSP)
+  return 'psx';                          // .bin/.cue/.chd/.pbp/.zip: PS1
+}
+
+/* ---- Menjalankan emulator ---- */
+function launch(src,name,core,title){
+  const url=typeof src==='string'?src:URL.createObjectURL(src);
+  $('#stage').classList.add('on');$('#exit').classList.add('on');
+  window.EJS_player='#game';
+  window.EJS_core=core;
+  window.EJS_gameUrl=url;
+  window.EJS_gameName=title;
+  window.EJS_pathtodata=CDN;
+  window.EJS_startOnLoaded=true;
+  window.EJS_color='#8b7bff';
+  window.EJS_backgroundColor='#000000';
+  window.EJS_threads=(core==='psp'&&window.crossOriginIsolated===true);
+  if(core==='psp'&&!window.crossOriginIsolated)toast('Mode PSP tanpa multi-thread (halaman belum diisolasi). Kalau gagal, buka lewat alamat Vercel, bukan dari file di HP.',7000);
+  else toast('Konsol: '+(CORE_LABEL[core]||core),2500);
+  window.EJS_defaultControls=undefined;
+  window.EJS_onGameStart=()=>{};
+  const s=document.createElement('script');
+  s.src=CDN+'loader.js';
+  s.onerror=()=>{toast('Gagal memuat emulator. Cek koneksi internet lalu coba lagi.',6000);exitGame()};
+  document.body.appendChild(s);
+}
+function exitGame(){location.reload()}
+$('#exit').onclick=exitGame;
+
+/* ---- UI ---- */
+$('#pick').onclick=()=>$('#file').click();
+$('#file').onchange=async e=>{
+  const p=await prepare(e.target.files);
+  e.target.value='';
+  if(!p)return;
+  const core=pickCore(p.first,p.blob.size);
+  if($('#keep').checked){
+    try{
+      await dbPut({id:Date.now()+'-'+Math.random().toString(36).slice(2,7),title:p.title,name:p.name,core,size:p.blob.size,blob:p.blob,added:Date.now()});
+      if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+      toast('Disimpan di browser.');
+    }catch(err){toast('Gagal menyimpan salinan (ruang penuh?). Game tetap dijalankan tanpa salinan.',5000)}
+  }
+  launch(p.blob,p.name,core,p.title);
+};
+const mb=n=>(n/1048576).toFixed(n>1e8?0:1)+' MB';
+async function renderLib(){
+  const list=await dbAll();
+  const box=$('#lib');
+  if(!list.length){box.innerHTML='<div class="empty">Belum ada. Centang "Simpan salinan" saat memilih file kalau mau disimpan di sini.</div>';return}
+  box.innerHTML='';
+  list.sort((a,b)=>b.added-a.added).forEach(g=>{
+    const row=document.createElement('div');row.className='game';
+    const t=document.createElement('div');t.className='t';
+    const b=document.createElement('b');b.textContent=g.title;
+    const s=document.createElement('span');s.textContent=(CORE_LABEL[g.core]||g.core)+' · '+mb(g.size);
+    t.append(b,s);
+    const play=document.createElement('button');play.className='btn ghost';play.textContent='Main';
+    play.onclick=()=>launch(g.blob,g.name,g.core,g.title);
+    const del=document.createElement('button');del.className='btn ghost bad';del.textContent='Hapus';
+    del.onclick=async()=>{if(confirm('Hapus "'+g.title+'" dari browser? Filenya di HP tidak ikut terhapus.')){await dbDel(g.id);renderLib()}};
+    row.append(t,play,del);box.appendChild(row);
+  });
+}
+renderLib();
+
+async function loadHosted(){
+  try{
+    const r=await fetch('games.json',{cache:'no-cache'});
+    if(!r.ok)return;
+    const list=await r.json();
+    if(!Array.isArray(list)||!list.length)return;
+    const box=$('#hosted');box.innerHTML='';
+    list.forEach(g=>{
+      if(!g||!g.url||!g.title)return;
+      const row=document.createElement('div');row.className='game';
+      const t=document.createElement('div');t.className='t';
+      const b=document.createElement('b');b.textContent=g.title;
+      const sp=document.createElement('span');sp.textContent=(CORE_LABEL[g.core]||g.core||'PSP')+(g.note?' · '+g.note:'');
+      t.append(b,sp);
+      const play=document.createElement('button');play.className='btn ghost';play.textContent='Main';
+      play.onclick=()=>launch(g.url,g.url.split('/').pop(),g.core||'psp',g.title);
+      row.append(t,play);box.appendChild(row);
+    });
+    if(box.children.length)$('#hostedBox').style.display='';
+  }catch(e){}
+}
+loadHosted();
+</script>
 </body>
 </html>
